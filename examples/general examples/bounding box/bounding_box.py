@@ -82,9 +82,15 @@ def offset_bounding_box(catia_app: catia) -> tuple():
             print('x=',x_lut)
             print('y=',y_lut)
             print('y=',z_lut)
-            res= (x_lut and y_lut and z_lut)
-            print('res=',res)
-            
+            error_code= (x_lut or y_lut or z_lut)
+            print('res=',error_code)
+            if error_code:
+                ret_val=catia_app.message_box(
+                    'Dont input equal offsets or zero offsets', 5, 'Error input')
+
+                if ret_val==2:
+                    sys.exit('Interrupt input')
+
         except ValueError:
             match caa.message_box('Wrong input! you must input numbers. You want'
                                   're-input offsets', 5, 'Input error!'):
@@ -308,7 +314,8 @@ if document.is_part:
     # TODO
     # need test Face
 
-    sFilter = ('Body', 'HybridShape', 'Face')
+    #sFilter = ('Body', 'HybridShape', 'Face')
+    sFilter = ('TriDim',)
     sStatus = selection.select_element2(sFilter, 'select a HybridBody', False)
     if sStatus == 'Cancel':
         sys.exit('HybridBodies not select')
@@ -319,7 +326,7 @@ if document.is_part:
 
     # TODO check plane
     # offsets in plane must be >0
-
+    """
     int_geom_add_type = spa.get_measurable(reference1).geometry_name
     print(int_geom_add_type)
     match int_geom_add_type:
@@ -384,7 +391,7 @@ if document.is_part:
             caa.message_box('Dont work with plane!', 16)
             sys.exit('error')
 
-    """
+
     ref_XY = ref_axis[3]
     ref_XZ = ref_axis[4]
     ref_YZ = ref_axis[5]
@@ -752,10 +759,12 @@ if document.is_part:
     pad = sf.add_new_pad_from_ref(ref, 50)
     pad.set_direction(ref_axis[2])
     part_document.update()
-    pad_1_limit = pad.first_limit
-    pad_1_limit.limit_mode = 3
-    pad_1_limit.limiting_element = part_document.create_reference_from_object(
-        Plane_Zmax_offset).com_object
+    pad_1_limit_1 = pad.first_limit
+    pad_1_limit_1.limit_mode = 3
+    pad_1_limit_1.limiting_element = Plane_Zmax_offset
+    pad_1_limit_2 = pad.second_limit
+    pad_1_limit_2.limit_mode = 3
+    pad_1_limit_2.limiting_element = Plane_Zmin_offset
     part_document.update()
 
     for pt in Point_tuple:
