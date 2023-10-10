@@ -323,79 +323,27 @@ if document.is_part:
     hb = Body(selection.item(1).value.com_object)
     reference1 = part_document.create_reference_from_object(hb)
     selection.clear()
-
-    # TODO check plane
-    # offsets in plane must be >0
+    #check plane
+    #TODO work here
+    # check plane parallel axis
     """
-    int_geom_add_type = spa.get_measurable(reference1).geometry_name
-    print(int_geom_add_type)
-    match int_geom_add_type:
-        case 0:
-            ADD_GEOM_TYPE = 'Unknown'
-        case 1:
-            ADD_GEOM_TYPE = 'Other'
-        case 2:
-            ADD_GEOM_TYPE = 'Volume'
-        case 3:
-            ADD_GEOM_TYPE = 'Surface'
-        case 4:
-            ADD_GEOM_TYPE = 'Cylinder'
-        case 5:
-            ADD_GEOM_TYPE = 'Sphere'
-        case 6:
-            ADD_GEOM_TYPE = 'Cone'
-        case 7:
-            ADD_GEOM_TYPE = 'Plane'
-
-        case 8:
-            ADD_GEOM_TYPE = 'Curve'
-        case 9:
-            ADD_GEOM_TYPE = 'Circle'
-        case 10:
-            ADD_GEOM_TYPE = 'Line'
-        case 11:
-            ADD_GEOM_TYPE = 'Point'
-        case 12:
-            ADD_GEOM_TYPE = 'Axis System'
-    caa.message_box('add='+ADD_GEOM_TYPE)
-
-    int_geom_base_type = hsf.get_geometrical_feature_type(reference1)
-    match int_geom_base_type:
-        case 0:
-            BASE_GEOM_TYPE = 'Unknown'
-        case 1:
-            BASE_GEOM_TYPE = 'Point'
-        case 2:
-            BASE_GEOM_TYPE = 'Curve'
-        case 3:
-            BASE_GEOM_TYPE = 'Line'
-        case 4:
-            BASE_GEOM_TYPE = 'Circle'
-        case 5:
-            BASE_GEOM_TYPE = 'Surface'
-        case 6:
-            BASE_GEOM_TYPE = 'Plane'
-        case 7:
-            BASE_GEOM_TYPE = 'Solid or Volume'
-    caa.message_box('base='+BASE_GEOM_TYPE)
-    if (int_geom_add_type == 7) and (int_geom_base_type == 6):
-        caa.message_box('Dont work with plane!', 16)
-        sys.exit('error')
-    else:
-        caa.message_box("нет")
-        measure = spa.get_measurable(reference1)
-        angle_xy = measure.get_angle_between(ref_XY)
-        angle_xz = measure.get_angle_between(ref_XZ)
-        angle_yz = measure.get_angle_between(ref_YZ)
-        if angle_xy and angle_xz and angle_yz:
-            caa.message_box('Dont work with plane!', 16)
-            sys.exit('error')
-
-
-    ref_XY = ref_axis[3]
-    ref_XZ = ref_axis[4]
-    ref_YZ = ref_axis[5]
+    oComponents(0) is the X coordinate of the origin 
+    oComponents(1) is the Y coordinate of the origin 
+    oComponents(2) is the Z coordinate of the origin 
+    oComponents(3) is the X coordinate of the first direction of the plane 
+    oComponents(4) is the Y coordinate of the first direction of the plane 
+    oComponents(5) is the Z coordinate of the first direction of the plane 
+    oComponents(6) is the X coordinate of the second direction of the plane 
+    oComponents(7) is the Y coordinate of the second direction of the plane 
+    oComponents(8) is the Z coordinate of the second direction of the plane 
     """
+    
+    try:
+        meas=spa.get_measurable(hb)
+        pln=meas.get_plane()
+        print('plane=',pln)
+    except:
+        print('not a plane')
 
     # create 6 extremum points
 
@@ -417,19 +365,6 @@ if document.is_part:
     HybridShapeExtremum2.extremum_type3 = 0
     HybridShapeExtremum2.name = 'min_X'
     
-    # compute distance -if plane=0
-    part_document.update_object(HybridShapeExtremum1)
-    part_document.update_object(HybridShapeExtremum2)
-    measure_x=spa.get_measurable(HybridShapeExtremum1)
-    #diff_x_max_min=measure_x.get_minimum_distance(HybridShapeExtremum2)
-    coord_x_max_min=measure_x.get_minimum_distance_points(HybridShapeExtremum2)
-    diff_x_max_min="%.6f" % coord_x_max_min[0]=="%.6f" % coord_x_max_min[3]
-    print(diff_x_max_min)
-    print("%.6f" % coord_x_max_min[0])
-    print("%.6f" % coord_x_max_min[3])
-    
-    
-
     HybridShapeExtremum3 = hsf.add_new_extremum(reference1, Hybrid_Shape_D2, 1)
     HybridShapeExtremum3.direction = Hybrid_Shape_D2
     HybridShapeExtremum3.direction2 = Hybrid_Shape_D1
@@ -448,16 +383,6 @@ if document.is_part:
     HybridShapeExtremum4.extremum_type3 = 0
     HybridShapeExtremum4.name = 'min_Y'
 
-    # compute distance -if plane=0
-    part_document.update_object(HybridShapeExtremum3)
-    part_document.update_object(HybridShapeExtremum4)
-    measure_y=spa.get_measurable(HybridShapeExtremum3)
-    coord_y_max_min=measure_y.get_minimum_distance_points(HybridShapeExtremum4)
-    diff_y_max_min="%.6f" % coord_y_max_min[1]=="%.6f" % coord_y_max_min[4]
-    print(diff_y_max_min)
-    print("%.6f" % coord_y_max_min[1])
-    print("%.6f" % coord_y_max_min[4])
-
     HybridShapeExtremum5 = hsf.add_new_extremum(reference1, Hybrid_Shape_D3, 1)
     HybridShapeExtremum5.direction = Hybrid_Shape_D3
     HybridShapeExtremum5.direction2 = Hybrid_Shape_D1
@@ -475,18 +400,6 @@ if document.is_part:
     HybridShapeExtremum6.extremum_type2 = 0
     HybridShapeExtremum6.extremum_type3 = 0
     HybridShapeExtremum6.name = 'min_Z'
-    
-    # compute distance -if plane=0
-    part_document.update_object(HybridShapeExtremum5)
-    part_document.update_object(HybridShapeExtremum6)
-    measure_z=spa.get_measurable(HybridShapeExtremum5)
-    coord_z_max_min=measure_z.get_minimum_distance_points(HybridShapeExtremum6)
-    diff_z_max_min="%.6f" % coord_z_max_min[2]=="%.6f" % coord_z_max_min[5]
-    print(diff_z_max_min)
-    print("%.6f" % coord_z_max_min[2])
-    print("%.6f" % coord_z_max_min[5])
-
-
     
     # append points to Geometrical Set
 
