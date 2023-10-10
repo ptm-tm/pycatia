@@ -315,7 +315,7 @@ if document.is_part:
     # need test Face
 
     #sFilter = ('Body', 'HybridShape', 'Face')
-    sFilter = ('TriDim',)
+    sFilter = ('TriDim','BiDim',)
     sStatus = selection.select_element2(sFilter, 'select a HybridBody', False)
     if sStatus == 'Cancel':
         sys.exit('HybridBodies not select')
@@ -416,6 +416,19 @@ if document.is_part:
     HybridShapeExtremum2.extremum_type2 = 0
     HybridShapeExtremum2.extremum_type3 = 0
     HybridShapeExtremum2.name = 'min_X'
+    
+    # compute distance -if plane=0
+    part_document.update_object(HybridShapeExtremum1)
+    part_document.update_object(HybridShapeExtremum2)
+    measure_x=spa.get_measurable(HybridShapeExtremum1)
+    #diff_x_max_min=measure_x.get_minimum_distance(HybridShapeExtremum2)
+    coord_x_max_min=measure_x.get_minimum_distance_points(HybridShapeExtremum2)
+    diff_x_max_min="%.6f" % coord_x_max_min[0]=="%.6f" % coord_x_max_min[3]
+    print(diff_x_max_min)
+    print("%.6f" % coord_x_max_min[0])
+    print("%.6f" % coord_x_max_min[3])
+    
+    
 
     HybridShapeExtremum3 = hsf.add_new_extremum(reference1, Hybrid_Shape_D2, 1)
     HybridShapeExtremum3.direction = Hybrid_Shape_D2
@@ -435,6 +448,16 @@ if document.is_part:
     HybridShapeExtremum4.extremum_type3 = 0
     HybridShapeExtremum4.name = 'min_Y'
 
+    # compute distance -if plane=0
+    part_document.update_object(HybridShapeExtremum3)
+    part_document.update_object(HybridShapeExtremum4)
+    measure_y=spa.get_measurable(HybridShapeExtremum3)
+    coord_y_max_min=measure_y.get_minimum_distance_points(HybridShapeExtremum4)
+    diff_y_max_min="%.6f" % coord_y_max_min[1]=="%.6f" % coord_y_max_min[4]
+    print(diff_y_max_min)
+    print("%.6f" % coord_y_max_min[1])
+    print("%.6f" % coord_y_max_min[4])
+
     HybridShapeExtremum5 = hsf.add_new_extremum(reference1, Hybrid_Shape_D3, 1)
     HybridShapeExtremum5.direction = Hybrid_Shape_D3
     HybridShapeExtremum5.direction2 = Hybrid_Shape_D1
@@ -452,7 +475,19 @@ if document.is_part:
     HybridShapeExtremum6.extremum_type2 = 0
     HybridShapeExtremum6.extremum_type3 = 0
     HybridShapeExtremum6.name = 'min_Z'
+    
+    # compute distance -if plane=0
+    part_document.update_object(HybridShapeExtremum5)
+    part_document.update_object(HybridShapeExtremum6)
+    measure_z=spa.get_measurable(HybridShapeExtremum5)
+    coord_z_max_min=measure_z.get_minimum_distance_points(HybridShapeExtremum6)
+    diff_z_max_min="%.6f" % coord_z_max_min[2]=="%.6f" % coord_z_max_min[5]
+    print(diff_z_max_min)
+    print("%.6f" % coord_z_max_min[2])
+    print("%.6f" % coord_z_max_min[5])
 
+
+    
     # append points to Geometrical Set
 
     hybridBody_Extreme_Points.append_hybrid_shape(HybridShapeExtremum1)
