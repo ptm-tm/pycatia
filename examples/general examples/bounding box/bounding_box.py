@@ -17,6 +17,16 @@
     .. note:
         Need add cylindrical bounding box
 """
+
+##########################################################
+# insert syspath to project folder so examples can be run.
+# for development purposes.
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('..\\pycatia'))
+##########################################################
+
 from msvcrt import getch
 from pycatia.mec_mod_interfaces.axis_system import AxisSystem
 from pycatia.mec_mod_interfaces.body import Body
@@ -28,16 +38,6 @@ from pycatia.exception_handling.exceptions import CATIAApplicationException
 
 __author__ = '[ptm] by plm-forum.ru'
 __status__ = 'alpha'
-
-##########################################################
-# insert syspath to project folder so examples can be run.
-# for development purposes.
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath('..\\pycatia'))
-##########################################################
-
 
 def offset_bounding_box(catia_app: catia) -> tuple():
     """
@@ -57,7 +57,7 @@ def offset_bounding_box(catia_app: catia) -> tuple():
         z_min:  offets for min value along [-z]-direction
 
     """
-    
+
     error_code = True
     while error_code:
         try:
@@ -74,7 +74,7 @@ def offset_bounding_box(catia_app: catia) -> tuple():
             res_z_min = float(catia_app.input_box(
                 'Input offset Zmin', 'Input offsets', 20))
             error_code = False
-            
+
             print(error_code)
             x_lut=lut(res_x_max, res_x_min)
             y_lut=lut(res_y_max, res_y_min)
@@ -337,7 +337,7 @@ if document.is_part:
     oComponents(7) is the Y coordinate of the second direction of the plane 
     oComponents(8) is the Z coordinate of the second direction of the plane 
     """
-    
+
     try:
         meas=spa.get_measurable(hb)
         pln=meas.get_plane()
@@ -364,7 +364,7 @@ if document.is_part:
     HybridShapeExtremum2.extremum_type2 = 0
     HybridShapeExtremum2.extremum_type3 = 0
     HybridShapeExtremum2.name = 'min_X'
-    
+
     HybridShapeExtremum3 = hsf.add_new_extremum(reference1, Hybrid_Shape_D2, 1)
     HybridShapeExtremum3.direction = Hybrid_Shape_D2
     HybridShapeExtremum3.direction2 = Hybrid_Shape_D1
@@ -400,7 +400,7 @@ if document.is_part:
     HybridShapeExtremum6.extremum_type2 = 0
     HybridShapeExtremum6.extremum_type3 = 0
     HybridShapeExtremum6.name = 'min_Z'
-    
+
     # append points to Geometrical Set
 
     hybridBody_Extreme_Points.append_hybrid_shape(HybridShapeExtremum1)
