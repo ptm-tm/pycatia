@@ -245,6 +245,43 @@ if document.is_part:
     ref_XZ = ref_axis[4]
     ref_YZ = ref_axis[5]
 
+    # promt user select face
+    caa.message_box('Select a HybridBodies', 0, title='Selection promt')
+
+    #sFilter = ('Body', 'HybridShape', 'Face')
+    sFilter = ('TriDim','BiDim',)
+    sStatus = selection.select_element2(sFilter, 'select a HybridBody', False)
+    if sStatus == 'Cancel':
+        sys.exit('HybridBodies not select')
+
+    hb = Body(selection.item(1).value.com_object)
+    reference1 = part_document.create_reference_from_object(hb)
+    selection.clear()
+
+    # check plane parallel axis
+
+    #TODO Remove test print
+
+    try:
+        meas=spa.get_measurable(hb)
+        pln=meas.get_plane()
+        print('plane=',pln)
+    except:
+        print('not a plane')
+
+    angle_xy=meas.get_angle_between(ref_XY)
+    angle_xz=meas.get_angle_between(ref_XZ)
+    angle_yz=meas.get_angle_between(ref_YZ)
+    print(f'xy={angle_xy}\n',angle_xy==0,
+      f'xz={angle_xz}\n',angle_xz==0,
+      f'yz={angle_yz}\n',angle_yz==0)
+
+    if ((angle_xy == 0) and lut(Offset_Z_max, Offset_Z_min)) or (angle_xz == 0 and lut(Offset_Y_max, Offset_Y_min)) or (angle_yz == 0 and lut(Offset_X_max, Offset_X_min)):
+        print('some error')
+        STATUS = str(angle_xy == 0 and lut(Offset_Z_max, Offset_Z_min))+'\n' + str(angle_xz == 0 and lut(
+            Offset_Y_max, Offset_Y_min))+'\n'+str(angle_yz == 0 and lut(Offset_X_max, Offset_X_min))
+        sys.exit(STATUS)
+
     # Create structure for geometry
     #   |-Bounding_box.X            :solid Body
     #   |-GSD Bounding Box.X        :geometrical sets main
@@ -289,43 +326,6 @@ if document.is_part:
     selection.add(hybridBody_Surfaces)
     selection.vis_properties.set_show(1)
     selection.clear()
-
-    # promt user select face
-    caa.message_box('Select a HybridBodies', 0, title='Selection promt')
-
-    #sFilter = ('Body', 'HybridShape', 'Face')
-    sFilter = ('TriDim','BiDim',)
-    sStatus = selection.select_element2(sFilter, 'select a HybridBody', False)
-    if sStatus == 'Cancel':
-        sys.exit('HybridBodies not select')
-
-    hb = Body(selection.item(1).value.com_object)
-    reference1 = part_document.create_reference_from_object(hb)
-    selection.clear()
-
-    # check plane parallel axis
-
-    #TODO create structure after detect plane
-
-    try:
-        meas=spa.get_measurable(hb)
-        pln=meas.get_plane()
-        print('plane=',pln)
-    except:
-        print('not a plane')
-
-    angle_xy=meas.get_angle_between(ref_XY)
-    angle_xz=meas.get_angle_between(ref_XZ)
-    angle_yz=meas.get_angle_between(ref_YZ)
-    print(f'xy={angle_xy}\n',angle_xy==0,
-      f'xz={angle_xz}\n',angle_xz==0,
-      f'yz={angle_yz}\n',angle_yz==0)
-
-    if ((angle_xy == 0) and lut(Offset_Z_max, Offset_Z_min)) or (angle_xz == 0 and lut(Offset_Y_max, Offset_Y_min)) or (angle_yz == 0 and lut(Offset_X_max, Offset_X_min)):
-        print('some error')
-        STATUS = str(angle_xy == 0 and lut(Offset_Z_max, Offset_Z_min))+'\n' + str(angle_xz == 0 and lut(
-            Offset_Y_max, Offset_Y_min))+'\n'+str(angle_yz == 0 and lut(Offset_X_max, Offset_X_min))
-        sys.exit(STATUS)
 
     # create 6 extremum points
 
