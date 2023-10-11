@@ -75,22 +75,6 @@ def offset_bounding_box(catia_app: catia) -> tuple():
                 'Input offset Zmin', 'Input offsets', 20))
             error_code = False
 
-            print(error_code)
-            x_lut=lut(res_x_max, res_x_min)
-            y_lut=lut(res_y_max, res_y_min)
-            z_lut=lut(res_z_max, res_z_min)
-            print('x=',x_lut)
-            print('y=',y_lut)
-            print('y=',z_lut)
-            error_code= (x_lut or y_lut or z_lut)
-            print('res=',error_code)
-            if error_code:
-                ret_val=catia_app.message_box(
-                    'Dont input equal offsets or zero offsets', 5, 'Error input')
-
-                if ret_val==2:
-                    sys.exit('Interrupt input')
-
         except ValueError:
             match caa.message_box('Wrong input! you must input numbers. You want'
                                   're-input offsets', 5, 'Input error!'):
@@ -100,8 +84,6 @@ def offset_bounding_box(catia_app: catia) -> tuple():
                     error_code = False
                     caa.message_box('Exit')
                     sys.exit('Abort')
-
-
 
     return (res_x_max, res_x_min, res_y_max, res_y_min, res_z_max, res_z_min)
 
@@ -181,11 +163,11 @@ def lut(num1: float, num2: float) -> bool:
     Returns
     -------
     bool
-        True    - all done
-        False   - has 0 offser or offset in same dir.
+        True    - Some error
+        False   - all fine
 
     """
-    return not bool((num1 + num2) and (num1 + num2))
+    return not bool(num1 + num2)
 
 
 # import headers
@@ -311,9 +293,6 @@ if document.is_part:
     # promt user select face
     caa.message_box('Select a HybridBodies', 0, title='Selection promt')
 
-    # TODO
-    # need test Face
-
     #sFilter = ('Body', 'HybridShape', 'Face')
     sFilter = ('TriDim','BiDim',)
     sStatus = selection.select_element2(sFilter, 'select a HybridBody', False)
@@ -323,20 +302,10 @@ if document.is_part:
     hb = Body(selection.item(1).value.com_object)
     reference1 = part_document.create_reference_from_object(hb)
     selection.clear()
-    #check plane
-    #TODO work here
+
     # check plane parallel axis
-    """
-    oComponents(0) is the X coordinate of the origin 
-    oComponents(1) is the Y coordinate of the origin 
-    oComponents(2) is the Z coordinate of the origin 
-    oComponents(3) is the X coordinate of the first direction of the plane 
-    oComponents(4) is the Y coordinate of the first direction of the plane 
-    oComponents(5) is the Z coordinate of the first direction of the plane 
-    oComponents(6) is the X coordinate of the second direction of the plane 
-    oComponents(7) is the Y coordinate of the second direction of the plane 
-    oComponents(8) is the Z coordinate of the second direction of the plane 
-    """
+
+    #TODO create structure after detect plane
 
     try:
         meas=spa.get_measurable(hb)
@@ -344,6 +313,19 @@ if document.is_part:
         print('plane=',pln)
     except:
         print('not a plane')
+
+    angle_xy=meas.get_angle_between(ref_XY)
+    angle_xz=meas.get_angle_between(ref_XZ)
+    angle_yz=meas.get_angle_between(ref_YZ)
+    print(f'xy={angle_xy}\n',angle_xy==0,
+      f'xz={angle_xz}\n',angle_xz==0,
+      f'yz={angle_yz}\n',angle_yz==0)
+
+    if ((angle_xy == 0) and lut(Offset_Z_max, Offset_Z_min)) or (angle_xz == 0 and lut(Offset_Y_max, Offset_Y_min)) or (angle_yz == 0 and lut(Offset_X_max, Offset_X_min)):
+        print('some error')
+        STATUS = str(angle_xy == 0 and lut(Offset_Z_max, Offset_Z_min))+'\n' + str(angle_xz == 0 and lut(
+            Offset_Y_max, Offset_Y_min))+'\n'+str(angle_yz == 0 and lut(Offset_X_max, Offset_X_min))
+        sys.exit(STATUS)
 
     # create 6 extremum points
 
