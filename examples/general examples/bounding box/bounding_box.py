@@ -200,6 +200,9 @@ def lut(num1: float, num2: float) -> bool:
 
 
 # import headers
+#TODO add parameters offsets to model
+#TODO  rename solid bb
+#TODO add ini file with config ( select sweep, solid bb,wire bb,point bb,surf bb)
 try:
     caa = catia()
     documents = caa.documents
