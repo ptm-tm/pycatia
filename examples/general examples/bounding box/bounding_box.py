@@ -35,7 +35,9 @@ from pycatia.in_interfaces.reference import Reference
 from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
+
 import pythoncom
+
 
 
 __author__ = '[ptm] by plm-forum.ru'
@@ -114,13 +116,33 @@ def axis_references(input_part: Part, input_axis: AxisSystem) -> tuple:
             pXZ:    XZ-plane Reference()
             pYZ:    YZ-Plane Reference()
     """
-    s_x_axis = f"REdge:(Edge:(Face:(Brp:({input_axis.name};1);None:();Cf11:());Face:(Brp:({input_axis.name};3);None:();Cf11:());None:(Limits1:();Limits2:());Cf11:());WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;MFBRepVersion_CXR14)"
-    s_y_axis = f"REdge:(Edge:(Face:(Brp:({input_axis.name};2);None:();Cf11:());Face:(Brp:({input_axis.name};1);None:();Cf11:());None:(Limits1:();Limits2:());Cf11:());WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;MFBRepVersion_CXR14)"
-    s_z_axis = f"REdge:(Edge:(Face:(Brp:({input_axis.name};3);None:();Cf11:());Face:(Brp:({input_axis.name};2);None:();Cf11:());None:(Limits1:();Limits2:());Cf11:());WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;MFBRepVersion_CXR14)"
 
-    s_xy_plane = f"RSur:(Face:(Brp:({input_axis.name};1);None:();Cf11:());WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;MFBRepVersion_CXR14)"
-    s_xz_plane = f"RSur:(Face:(Brp:({input_axis.name};3);None:();Cf11:());WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;MFBRepVersion_CXR14)"
-    s_yz_plane = f"RSur:(Face:(Brp:({input_axis.name};2);None:();Cf11:());WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;MFBRepVersion_CXR14)"
+    s_x_axis = f'REdge:(Edge:(Face:(Brp:({input_axis.name};1);'\
+        f'None:();Cf11:());Face:(Brp:({input_axis.name};3);'\
+        'None:();Cf11:());None:(Limits1:();Limits2:());Cf11:());'\
+        'WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;'\
+        'MFBRepVersion_CXR14)'
+
+    s_y_axis = f'REdge:(Edge:(Face:(Brp:({input_axis.name};2);'\
+        f'None:();Cf11:());Face:(Brp:({input_axis.name};1);'\
+        'None:();Cf11:());None:(Limits1:();Limits2:());Cf11:());'\
+        'WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;'\
+        'MFBRepVersion_CXR14)'
+    s_z_axis = f'REdge:(Edge:(Face:(Brp:({input_axis.name};3);'\
+        f'None:();Cf11:());Face:(Brp:({input_axis.name};2);'\
+        'None:();Cf11:());None:(Limits1:();Limits2:());Cf11:());'\
+        'WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;'\
+        'MFBRepVersion_CXR14)'
+
+    s_xy_plane = f'RSur:(Face:(Brp:({input_axis.name};1);None:();Cf11:());'\
+        'WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;'\
+        'MFBRepVersion_CXR14)'
+    s_xz_plane = f'RSur:(Face:(Brp:({input_axis.name};3);None:();Cf11:());'\
+        'WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;'\
+        'MFBRepVersion_CXR14)'
+    s_yz_plane = f'RSur:(Face:(Brp:({input_axis.name};2);None:();Cf11:());'\
+        'WithPermanentBody;WithoutBuildError;WithSelectingFeatureSupport;'\
+        'MFBRepVersion_CXR14)'
 
     res0 = input_part.create_reference_from_b_rep_name(s_x_axis, Axis_System)
     res1 = input_part.create_reference_from_b_rep_name(s_y_axis, Axis_System)
@@ -267,9 +289,6 @@ if document.is_part:
         angle_xy = app_measure.get_angle_between(ref_XY)
         angle_xz = app_measure.get_angle_between(ref_XZ)
         angle_yz = app_measure.get_angle_between(ref_YZ)
-        print(f'xy={angle_xy}\n', angle_xy == 0,
-              f'xz={angle_xz}\n', angle_xz == 0,
-              f'yz={angle_yz}\n', angle_yz == 0)
 
         z_parallel = (angle_xy == 0) and lut(Offset_Z_max, Offset_Z_min)
         y_parallel = (angle_xz == 0) and lut(Offset_Y_max, Offset_Y_min)
@@ -296,10 +315,8 @@ if document.is_part:
             caa.message_box(STATUS, 16, 'Critical error!')
             sys.exit(STATUS)
     except pythoncom.com_error:
+        #pylint error but need to detect not a plane
         pass
-
-
-
 
     # Create structure for geometry
     #   |-Bounding_box.X            :solid Body
