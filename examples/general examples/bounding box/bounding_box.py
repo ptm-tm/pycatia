@@ -241,7 +241,7 @@ if document.is_part:
     # need to autocomplete
     part_document = Part(document.part.com_object)
     selection = document.selection
-
+    
     try:
         part_document.update()
     except CATIAApplicationException as e:
@@ -320,7 +320,7 @@ if document.is_part:
                 'Apps will close!'
             caa.message_box(STATUS, 16, 'Critical error!')
             sys.exit(STATUS)
-    except pythoncom.com_error:
+    except pythoncom.com_error: # pylint: disable=E1101
         #pylint error but need to detect not a plane
         pass
 
@@ -712,7 +712,8 @@ if document.is_part:
     Wireframe_Bounding_Box.add_element(Line_H1V0_H1V0_max)
     Wireframe_Bounding_Box.add_element(Line_H0V0_H0V0_max)
 
-    Wireframe_Bounding_Box.name = f'Wireframe_Bounding_Box.{j} [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
+    Wireframe_Bounding_Box.name = f'Wireframe_Bounding_Box.{j} '\
+        '[{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
 
     # non mainfold
     Wireframe_Bounding_Box.set_manifold(False)
@@ -768,7 +769,8 @@ if document.is_part:
     Surface_Bounding_box.add_element(Fill_Zmax)
     Surface_Bounding_box.set_manifold(True)
     Surface_Bounding_box.set_connex(True)
-    Surface_Bounding_box.name = f'Surface_Bounding_box.{j} [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
+    Surface_Bounding_box.name = f'Surface_Bounding_box.{j} '\
+        '[{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
 
     hybridBody_main.append_hybrid_shape(Surface_Bounding_box)
 
