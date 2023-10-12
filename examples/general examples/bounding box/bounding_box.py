@@ -35,6 +35,8 @@ from pycatia.in_interfaces.reference import Reference
 from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
+import pythoncom
+
 
 __author__ = '[ptm] by plm-forum.ru'
 __status__ = 'alpha'
@@ -259,28 +261,45 @@ if document.is_part:
     selection.clear()
 
     # check plane parallel axis
-
-    #TODO Remove test print
-
     try:
-        meas=spa.get_measurable(hb)
-        pln=meas.get_plane()
-        print('plane=',pln)
-    except:
-        print('not a plane')
+        app_measure = spa.get_measurable(hb)
+        pln = app_measure.get_plane()
+        angle_xy = app_measure.get_angle_between(ref_XY)
+        angle_xz = app_measure.get_angle_between(ref_XZ)
+        angle_yz = app_measure.get_angle_between(ref_YZ)
+        print(f'xy={angle_xy}\n', angle_xy == 0,
+              f'xz={angle_xz}\n', angle_xz == 0,
+              f'yz={angle_yz}\n', angle_yz == 0)
 
-    angle_xy=meas.get_angle_between(ref_XY)
-    angle_xz=meas.get_angle_between(ref_XZ)
-    angle_yz=meas.get_angle_between(ref_YZ)
-    print(f'xy={angle_xy}\n',angle_xy==0,
-      f'xz={angle_xz}\n',angle_xz==0,
-      f'yz={angle_yz}\n',angle_yz==0)
+        z_parallel = (angle_xy == 0) and lut(Offset_Z_max, Offset_Z_min)
+        y_parallel = (angle_xz == 0) and lut(Offset_Y_max, Offset_Y_min)
+        x_parallel = (angle_yz == 0) and lut(Offset_X_max, Offset_X_min)
 
-    if ((angle_xy == 0) and lut(Offset_Z_max, Offset_Z_min)) or (angle_xz == 0 and lut(Offset_Y_max, Offset_Y_min)) or (angle_yz == 0 and lut(Offset_X_max, Offset_X_min)):
-        print('some error')
-        STATUS = str(angle_xy == 0 and lut(Offset_Z_max, Offset_Z_min))+'\n' + str(angle_xz == 0 and lut(
-            Offset_Y_max, Offset_Y_min))+'\n'+str(angle_yz == 0 and lut(Offset_X_max, Offset_X_min))
-        sys.exit(STATUS)
+        # ugly but work
+        # check parallel and exit
+        if z_parallel:
+            STATUS = 'Surface is plane and parallel to Z_plane!\n'\
+                'Offset_Y is equal 0!\n'\
+                'Apps will close!'
+            caa.message_box(STATUS, 16, 'Critical error!')
+            sys.exit(STATUS)
+        if y_parallel:
+            STATUS = 'Surface is plane and parallel to Y_plane!\n'\
+                'Offset_Y is equal 0!\n'\
+                'Apps will close!'
+            caa.message_box(STATUS, 16, 'Critical error!')
+            sys.exit(STATUS)
+        if x_parallel:
+            STATUS = 'Surface is plane and parallel to X_plane!\n'\
+                'Offset_X is equal 0!\n'\
+                'Apps will close!'
+            caa.message_box(STATUS, 16, 'Critical error!')
+            sys.exit(STATUS)
+    except pythoncom.com_error:
+        pass
+
+
+
 
     # Create structure for geometry
     #   |-Bounding_box.X            :solid Body
