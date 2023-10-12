@@ -200,8 +200,7 @@ def lut(num1: float, num2: float) -> bool:
 
 
 # import headers
-#TODO add parameters offsets to model
-#TODO  rename solid bb
+
 try:
     caa = catia()
     documents = caa.documents
@@ -251,14 +250,6 @@ if document.is_part:
         print('Press any key to exit...')
         getch()
         sys.exit('Part document must be without errors!')
-    
-    part_param=part_document.parameters
-    part_param.create_dimension('Offset_X_max', 'LENGTH',Offset_X_max)
-    part_param.create_dimension('Offset_X_min', 'LENGTH',Offset_X_min)
-    part_param.create_dimension('Offset_Y_max', 'LENGTH',Offset_Y_max)
-    part_param.create_dimension('Offset_Y_min', 'LENGTH',Offset_Y_min)
-    part_param.create_dimension('Offset_Z_max', 'LENGTH',Offset_Z_max)
-    part_param.create_dimension('Offset_Z_min', 'LENGTH',Offset_Z_min)
 
     hsf = part_document.hybrid_shape_factory
 
@@ -472,6 +463,7 @@ if document.is_part:
     part_document.update_object(Plane_Xmin)
 
     # and 6 offset planes
+
     Plane_Xmax_offset = hsf.add_new_plane_offset(
         Plane_Xmax, Offset_X_max, False)
     Plane_Xmax_offset.name = 'Plane_X_max_offset'
@@ -499,6 +491,37 @@ if document.is_part:
     hybridBody_Planes.append_hybrid_shape(Plane_Ymin_offset)
     hybridBody_Planes.append_hybrid_shape(Plane_Zmax_offset)
     hybridBody_Planes.append_hybrid_shape(Plane_Zmin_offset)
+
+    #Add dimension
+    part_param=part_document.parameters
+    part_param.create_dimension('Offset_X_max', 'LENGTH',Offset_X_max)
+    part_param.create_dimension('Offset_X_min', 'LENGTH',Offset_X_min)
+    part_param.create_dimension('Offset_Y_max', 'LENGTH',Offset_Y_max)
+    part_param.create_dimension('Offset_Y_min', 'LENGTH',Offset_Y_min)
+    part_param.create_dimension('Offset_Z_max', 'LENGTH',Offset_Z_max)
+    part_param.create_dimension('Offset_Z_min', 'LENGTH',Offset_Z_min)
+
+    #add relation to offset planes
+    part_relation = part_document.relations
+    part_relation.create_formula(
+        'Offset_X_max', 'Offset to X_max direction',
+        Plane_Xmax_offset.offset, 'Offset_X_max')
+    part_relation.create_formula(
+        'Offset_X_min', 'Offset to X_min direction',
+        Plane_Xmin_offset.offset, 'Offset_X_min')
+    part_relation.create_formula(
+        'Offset_Y_max', 'Offset to Y_max direction',
+        Plane_Ymax_offset.offset, 'Offset_Y_max')
+    part_relation.create_formula(
+        'Offset_Y_min', 'Offset to Y_min direction',
+        Plane_Ymin_offset.offset, 'Offset_Y_min')
+    part_relation.create_formula(
+        'Offset_Z_max', 'Offset to Z_max direction',
+        Plane_Zmax_offset.offset, 'Offset_Z_max')
+    part_relation.create_formula(
+        'Offset_Z_min', 'Offset to Z_min direction',
+        Plane_Zmin_offset.offset, 'Offset_Z_min')
+
 
     # get bounding box measure
     part_document.update()
@@ -710,7 +733,7 @@ if document.is_part:
     Fill_Zmax.add_bound(Line_H1V0_H0V0_Zmax)
     hybridBody_Surfaces.append_hybrid_shape(Fill_Zmax)
     part_document.update()
-    
+
     # extrude dont work in 0.6.1 ver
     if version > '0.6.1':
         Wall = hsf.add_new_extrude(Profile_Pad, 20, 0, Hybrid_Shape_D3)
@@ -747,6 +770,7 @@ if document.is_part:
 
     hybridBody_main.append_hybrid_shape(Surface_Bounding_box)
 
+    #TODO  rename solid bb
     # solid
     part_document.update_object(Profile_Pad)
     part_document.update_object(Plane_Zmax_offset)
