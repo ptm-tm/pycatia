@@ -494,32 +494,34 @@ if document.is_part:
 
     #Add dimension
     part_param=part_document.parameters
-    part_param.create_dimension('Offset_X_max', 'LENGTH',Offset_X_max)
-    part_param.create_dimension('Offset_X_min', 'LENGTH',Offset_X_min)
-    part_param.create_dimension('Offset_Y_max', 'LENGTH',Offset_Y_max)
-    part_param.create_dimension('Offset_Y_min', 'LENGTH',Offset_Y_min)
-    part_param.create_dimension('Offset_Z_max', 'LENGTH',Offset_Z_max)
-    part_param.create_dimension('Offset_Z_min', 'LENGTH',Offset_Z_min)
+    part_param.create_dimension('Offset_X_max.{j}', 'LENGTH',Offset_X_max)
+    part_param.create_dimension('Offset_X_min.{j}', 'LENGTH',Offset_X_min)
+    part_param.create_dimension('Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
+    part_param.create_dimension('Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
+    part_param.create_dimension('Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
+    part_param.create_dimension('Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
 
     #add relation to offset planes
+    #TODO not work if run 2 times
+    #print(Offset_X_max.)
     part_relation = part_document.relations
     part_relation.create_formula(
-        'Offset_X_max', 'Offset to X_max direction',
+        'Offset_X_max.{j}', 'Offset to X_max direction',
         Plane_Xmax_offset.offset, 'Offset_X_max')
     part_relation.create_formula(
-        'Offset_X_min', 'Offset to X_min direction',
+        'Offset_X_min.{j}', 'Offset to X_min direction',
         Plane_Xmin_offset.offset, 'Offset_X_min')
     part_relation.create_formula(
-        'Offset_Y_max', 'Offset to Y_max direction',
+        'Offset_Y_max.{j}', 'Offset to Y_max direction',
         Plane_Ymax_offset.offset, 'Offset_Y_max')
     part_relation.create_formula(
-        'Offset_Y_min', 'Offset to Y_min direction',
+        'Offset_Y_min.{j}', 'Offset to Y_min direction',
         Plane_Ymin_offset.offset, 'Offset_Y_min')
     part_relation.create_formula(
-        'Offset_Z_max', 'Offset to Z_max direction',
+        'Offset_Z_max.{j}', 'Offset to Z_max direction',
         Plane_Zmax_offset.offset, 'Offset_Z_max')
     part_relation.create_formula(
-        'Offset_Z_min', 'Offset to Z_min direction',
+        'Offset_Z_min.{j}', 'Offset to Z_min direction',
         Plane_Zmin_offset.offset, 'Offset_Z_min')
 
 
@@ -534,7 +536,7 @@ if document.is_part:
         part_document.create_reference_from_object(Plane_Ymin),
         spa)
     z_length = measure_between_planes(
-        part_document.create_reference_from_object(Plane_Zmax),
+            part_document.create_reference_from_object(Plane_Zmax),
         part_document.create_reference_from_object(Plane_Zmin),
         spa)
 
@@ -710,7 +712,7 @@ if document.is_part:
     Wireframe_Bounding_Box.add_element(Line_H1V0_H1V0_max)
     Wireframe_Bounding_Box.add_element(Line_H0V0_H0V0_max)
 
-    Wireframe_Bounding_Box.name = f'Wireframe_Bounding_Box.{j}'
+    Wireframe_Bounding_Box.name = f'Wireframe_Bounding_Box.{j} [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
 
     # non mainfold
     Wireframe_Bounding_Box.set_manifold(False)
@@ -766,7 +768,7 @@ if document.is_part:
     Surface_Bounding_box.add_element(Fill_Zmax)
     Surface_Bounding_box.set_manifold(True)
     Surface_Bounding_box.set_connex(True)
-    Surface_Bounding_box.name = f'Surface_Bounding_box.{j}'
+    Surface_Bounding_box.name = f'Surface_Bounding_box.{j} [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
 
     hybridBody_main.append_hybrid_shape(Surface_Bounding_box)
 
