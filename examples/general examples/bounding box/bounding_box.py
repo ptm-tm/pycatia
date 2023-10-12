@@ -202,7 +202,6 @@ def lut(num1: float, num2: float) -> bool:
 # import headers
 #TODO add parameters offsets to model
 #TODO  rename solid bb
-#TODO add ini file with config ( select sweep, solid bb,wire bb,point bb,surf bb)
 try:
     caa = catia()
     documents = caa.documents
@@ -252,6 +251,14 @@ if document.is_part:
         print('Press any key to exit...')
         getch()
         sys.exit('Part document must be without errors!')
+    
+    part_param=part_document.parameters
+    part_param.create_dimension('Offset_X_max', 'LENGTH',Offset_X_max)
+    part_param.create_dimension('Offset_X_min', 'LENGTH',Offset_X_min)
+    part_param.create_dimension('Offset_Y_max', 'LENGTH',Offset_Y_max)
+    part_param.create_dimension('Offset_Y_min', 'LENGTH',Offset_Y_min)
+    part_param.create_dimension('Offset_Z_max', 'LENGTH',Offset_Z_max)
+    part_param.create_dimension('Offset_Z_min', 'LENGTH',Offset_Z_min)
 
     hsf = part_document.hybrid_shape_factory
 
