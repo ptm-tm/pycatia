@@ -35,13 +35,18 @@ from pycatia.in_interfaces.reference import Reference
 from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
+from pycatia.version import version
 
 import pythoncom
+"""
+if version <='0.6.1':
+    sys.exit('version pycatia must be > 0.6.1. Current version is='+version)
+"""
 
 
 
 __author__ = '[ptm] by plm-forum.ru'
-__status__ = 'alpha'
+__status__ = 'beta'
 
 def offset_bounding_box(catia_app: catia) -> tuple():
     """
@@ -695,15 +700,32 @@ if document.is_part:
     Fill_Zmax.add_bound(Line_H1V0_H0V0_Zmax)
     hybridBody_Surfaces.append_hybrid_shape(Fill_Zmax)
     part_document.update()
+    
+    # extrude dont work in 0.6.1 ver
+    if version > '0.6.1':
+        Wall = hsf.add_new_extrude(Profile_Pad, 20, 0, Hybrid_Shape_D3)
+        Wall.first_limit_type = 2
+        Wall.second_limit_type = 2
+        Wall.compute()
+        Wall.first_upto_element = part_document.create_reference_from_object(
+            Plane_Zmin_offset)
+        Wall.second_upto_element = part_document.create_reference_from_object(
+            Plane_Zmax_offset)
+    else:
+        Wall = hsf.add_new_sweep_line(Profile_Pad)
+        Wall.mode = 6
+        Wall.solution_no = 0
+        Wall.smooth_activity = False
+        Wall.guide_deviation_activity = False
+        Wall.draft_computation_mode = 0
+        Wall.draft_direction = Hybrid_Shape_D3
+        wall_lim1_ref = part_document.create_reference_from_object(
+            Plane_Zmax_offset)
+        wall_lim2_ref = part_document.create_reference_from_object(
+            Plane_Zmin_offset)
+        Wall.set_first_length_definition_type(3, wall_lim1_ref)
+        Wall.set_second_length_definition_type(3, wall_lim2_ref)
 
-    Wall = hsf.add_new_extrude(Profile_Pad, 20, 0, Hybrid_Shape_D3)
-    Wall.first_limit_type = 2
-    Wall.second_limit_type = 2
-    Wall.compute()
-    Wall.first_upto_element = part_document.create_reference_from_object(
-        Plane_Zmin_offset)
-    Wall.second_upto_element = part_document.create_reference_from_object(
-        Plane_Zmax_offset)
     Wall.name = 'Wall_e'
     hybridBody_Surfaces.append_hybrid_shape(Wall)
 
