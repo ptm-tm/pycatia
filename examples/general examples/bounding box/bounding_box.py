@@ -31,6 +31,8 @@ from msvcrt import getch
 from pycatia.mec_mod_interfaces.axis_system import AxisSystem
 from pycatia.mec_mod_interfaces.body import Body
 from pycatia.mec_mod_interfaces.part import Part
+from pycatia.mec_mod_interfaces.part_document import PartDocument
+
 from pycatia.in_interfaces.reference import Reference
 from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
@@ -204,7 +206,7 @@ def lut(num1: float, num2: float) -> bool:
 try:
     caa = catia()
     documents = caa.documents
-    document = caa.active_document
+    document = PartDocument(caa.active_document.com_object)
 except CATIAApplicationException as e:
     print(e.message)
     print('CATIA not started or document not ' +
@@ -241,6 +243,7 @@ if document.is_part:
     # need to autocomplete
     part_document = Part(document.part.com_object)
     selection = document.selection
+
     
     try:
         part_document.update()
@@ -493,6 +496,20 @@ if document.is_part:
     hybridBody_Planes.append_hybrid_shape(Plane_Zmin_offset)
 
     #Add dimension
+    #TODO add read and write j
+    j=0
+    product=document.product
+    user_prop=product.user_ref_properties
+    user_prop.create_integer('j', j)
+    user_prop.
+    
+    
+    print()
+    
+
+    #prod_params=my_product.user
+    
+    
     part_param=part_document.parameters
     part_param.create_dimension('Offset_X_max.{j}', 'LENGTH',Offset_X_max)
     part_param.create_dimension('Offset_X_min.{j}', 'LENGTH',Offset_X_min)
@@ -774,7 +791,6 @@ if document.is_part:
 
     hybridBody_main.append_hybrid_shape(Surface_Bounding_box)
 
-    #TODO  rename solid bb
     # solid
     part_document.update_object(Profile_Pad)
     part_document.update_object(Plane_Zmax_offset)
@@ -796,7 +812,7 @@ if document.is_part:
     for pt in Point_tuple:
         selection.add(pt)
     # add vis property to point
-    # part must bu updated
+    # part must be updated
     part_document.update()
     selection.vis_properties.set_show(0)
     selection.vis_properties.set_symbol_type(12)
@@ -825,6 +841,10 @@ if document.is_part:
     selection.vis_properties.set_real_color(128, 0, 255, 0)
     selection.vis_properties.set_real_opacity(55, 0)
     selection.clear()
+    body1.name=body1.name+f' [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
+    
+    sys.exit(f'Bounding box [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
+             'created sucsesfull ')
 
 else:
     print('must be a part')
