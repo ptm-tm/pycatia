@@ -39,6 +39,8 @@ from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
 from pycatia.version import version
+from pycatia.knowledge_interfaces.parameter_set import Parameters
+
 
 
 """
@@ -46,6 +48,8 @@ if version <='0.6.1':
     sys.exit('version pycatia must be > 0.6.1. Current version is='+version)
 """
 
+# TODO do not work with existing params
+# TODO add name to bounding box params
 
 
 __author__ = '[ptm] by plm-forum.ru'
@@ -323,6 +327,19 @@ if document.is_part:
     except pythoncom.com_error: 
         #pylint error but need to detect not a plane
         pass
+    
+    #Add dimension
+    # Read number of bounding box
+    try:
+        product=document.product
+        user_prop=product.user_ref_properties
+        j=int(user_prop.item('j').value)+1
+        user_prop.item('j').value=j
+    except CATIAApplicationException as e:
+        print(e.message)
+        print('will use j=0')
+        j=0
+        user_prop.create_integer('j', 0)
 
     # Create structure for geometry
     #   |-Bounding_box.X            :solid Body
@@ -359,7 +376,6 @@ if document.is_part:
     hybridBody_Surfaces = hybridBody_main.hybrid_bodies.add()
     hybridBody_Surfaces.name = f'Surfaces.{j}'
 
-    part_document.update()
     selection.add(hybridBody_Extreme_Points)
     selection.add(hybridBody_Planes)
     selection.add(hybridBody_Base_Lines)
@@ -378,7 +394,7 @@ if document.is_part:
     HybridShapeExtremum1.extremum_type = 1
     HybridShapeExtremum1.extremum_type2 = 1
     HybridShapeExtremum1.extremum_type3 = 1
-    HybridShapeExtremum1.name = 'max_X'
+    HybridShapeExtremum1.name = f'max_X.{j}'
 
     HybridShapeExtremum2 = hsf.add_new_extremum(reference1, Hybrid_Shape_D1, 0)
     HybridShapeExtremum2.direction = Hybrid_Shape_D1
@@ -387,7 +403,7 @@ if document.is_part:
     HybridShapeExtremum2.extremum_type = 0
     HybridShapeExtremum2.extremum_type2 = 0
     HybridShapeExtremum2.extremum_type3 = 0
-    HybridShapeExtremum2.name = 'min_X'
+    HybridShapeExtremum2.name = f'min_X.{j}'
 
     HybridShapeExtremum3 = hsf.add_new_extremum(reference1, Hybrid_Shape_D2, 1)
     HybridShapeExtremum3.direction = Hybrid_Shape_D2
@@ -396,7 +412,7 @@ if document.is_part:
     HybridShapeExtremum3.extremum_type = 1
     HybridShapeExtremum3.extremum_type2 = 1
     HybridShapeExtremum3.extremum_type3 = 1
-    HybridShapeExtremum3.name = 'max_Y'
+    HybridShapeExtremum3.name = f'max_Y.{j}'
 
     HybridShapeExtremum4 = hsf.add_new_extremum(reference1, Hybrid_Shape_D2, 0)
     HybridShapeExtremum4.direction = Hybrid_Shape_D2
@@ -405,7 +421,7 @@ if document.is_part:
     HybridShapeExtremum4.extremum_type = 0
     HybridShapeExtremum4.extremum_type2 = 0
     HybridShapeExtremum4.extremum_type3 = 0
-    HybridShapeExtremum4.name = 'min_Y'
+    HybridShapeExtremum4.name = f'min_Y.{j}'
 
     HybridShapeExtremum5 = hsf.add_new_extremum(reference1, Hybrid_Shape_D3, 1)
     HybridShapeExtremum5.direction = Hybrid_Shape_D3
@@ -414,7 +430,7 @@ if document.is_part:
     HybridShapeExtremum5.extremum_type = 1
     HybridShapeExtremum5.extremum_type2 = 1
     HybridShapeExtremum5.extremum_type3 = 1
-    HybridShapeExtremum5.name = 'max_Z'
+    HybridShapeExtremum5.name = f'max_Z.{j}'
 
     HybridShapeExtremum6 = hsf.add_new_extremum(reference1, Hybrid_Shape_D3, 0)
     HybridShapeExtremum6.direction = Hybrid_Shape_D3
@@ -423,7 +439,7 @@ if document.is_part:
     HybridShapeExtremum6.extremum_type = 0
     HybridShapeExtremum6.extremum_type2 = 0
     HybridShapeExtremum6.extremum_type3 = 0
-    HybridShapeExtremum6.name = 'min_Z'
+    HybridShapeExtremum6.name = f'min_Z.{j}'
 
     # append points to Geometrical Set
 
@@ -438,19 +454,19 @@ if document.is_part:
     # 6 extremum planes
 
     Plane_Xmax = hsf.add_new_plane_offset_pt(ref_YZ, HybridShapeExtremum1)
-    Plane_Xmax.name = 'Plane_X_max'
+    Plane_Xmax.name = f'Plane_X_max.{j}'
     Plane_Xmin = hsf.add_new_plane_offset_pt(ref_YZ, HybridShapeExtremum2)
-    Plane_Xmin.name = 'Plane_X_min'
+    Plane_Xmin.name = f'Plane_X_min.{j}'
 
     Plane_Ymax = hsf.add_new_plane_offset_pt(ref_XZ, HybridShapeExtremum3)
-    Plane_Ymax.name = 'Plane_Y_max'
+    Plane_Ymax.name = f'Plane_Y_max.{j}'
     Plane_Ymin = hsf.add_new_plane_offset_pt(ref_XZ, HybridShapeExtremum4)
-    Plane_Ymin.name = 'Plane_Y_min'
+    Plane_Ymin.name = f'Plane_Y_min.{j}'
 
     Plane_Zmax = hsf.add_new_plane_offset_pt(ref_XY, HybridShapeExtremum5)
-    Plane_Zmax.name = 'Plane_Z_max'
+    Plane_Zmax.name = f'Plane_Z_max.{j}'
     Plane_Zmin = hsf.add_new_plane_offset_pt(ref_XY, HybridShapeExtremum6)
-    Plane_Zmin.name = 'Plane_Z_min'
+    Plane_Zmin.name = f'Plane_Z_min.{j}'
 
     hybridBody_Planes.append_hybrid_shape(Plane_Xmax)
     hybridBody_Planes.append_hybrid_shape(Plane_Xmin)
@@ -459,31 +475,28 @@ if document.is_part:
     hybridBody_Planes.append_hybrid_shape(Plane_Zmax)
     hybridBody_Planes.append_hybrid_shape(Plane_Zmin)
 
-    part_document.update_object(Plane_Xmax)
-    part_document.update_object(Plane_Xmin)
-
     # and 6 offset planes
 
     Plane_Xmax_offset = hsf.add_new_plane_offset(
         Plane_Xmax, Offset_X_max, False)
-    Plane_Xmax_offset.name = 'Plane_X_max_offset'
+    Plane_Xmax_offset.name = f'Plane_X_max_offset.{j}'
     Plane_Xmin_offset = hsf.add_new_plane_offset(
         Plane_Xmin, Offset_X_min, True)
-    Plane_Xmin_offset.name = 'Plane_X_min_offset'
+    Plane_Xmin_offset.name = f'Plane_X_min_offset.{j}'
 
     Plane_Ymax_offset = hsf.add_new_plane_offset(
         Plane_Ymax, Offset_Y_max, False)
-    Plane_Ymax_offset.name = 'Plane_Y_max_offset'
+    Plane_Ymax_offset.name = f'Plane_Y_max_offset.{j}'
     Plane_Ymin_offset = hsf.add_new_plane_offset(
         Plane_Ymin, Offset_Y_min, True)
-    Plane_Ymin_offset.name = 'Plane_Y_min_offset'
+    Plane_Ymin_offset.name = f'Plane_Y_min_offset.{j}'
 
     Plane_Zmax_offset = hsf.add_new_plane_offset(
         Plane_Zmax, Offset_Z_max, False)
-    Plane_Zmax_offset.name = 'Plane_Z_max_offset'
+    Plane_Zmax_offset.name = f'Plane_Z_max_offset.{j}'
     Plane_Zmin_offset = hsf.add_new_plane_offset(
         Plane_Zmin, Offset_Z_min, True)
-    Plane_Zmin_offset.name = 'Plane_Z_min_offset'
+    Plane_Zmin_offset.name = f'Plane_Z_min_offset.{j}'
 
     hybridBody_Planes.append_hybrid_shape(Plane_Xmax_offset)
     hybridBody_Planes.append_hybrid_shape(Plane_Xmin_offset)
@@ -492,27 +505,21 @@ if document.is_part:
     hybridBody_Planes.append_hybrid_shape(Plane_Zmax_offset)
     hybridBody_Planes.append_hybrid_shape(Plane_Zmin_offset)
 
-    #Add dimension
-    # Read number of bounding box
-    try:
-        product=document.product
-        user_prop=product.user_ref_properties
-        j=int(user_prop.item('j').value)+1
-        user_prop.item('j').value=j
-    except CATIAApplicationException as e:
-        print(e.message)
-        print('will use j=0')
-        j=0
-        user_prop.create_integer('j', 0)
-
     #prod_params=my_product.user
-    part_param=part_document.parameters
-    part_param.create_dimension(f'Offset_X_max.{j}', 'LENGTH',Offset_X_max)
-    part_param.create_dimension(f'Offset_X_min.{j}', 'LENGTH',Offset_X_min)
-    part_param.create_dimension(f'Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
-    part_param.create_dimension(f'Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
-    part_param.create_dimension(f'Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
-    part_param.create_dimension(f'Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
+    part_param_set=Parameters(part_document.parameters.com_object)
+    root_param_set=part_param_set.root_parameter_set
+    
+
+    bb_param_set=part_param_set.create_set_of_parameters(part_param_set)
+    
+    #TODO add nate to params
+    #part_param_set.name=f'Parameters of bounding box.{j}'
+    part_param_set.create_dimension(f'Offset_X_max.{j}', 'LENGTH',Offset_X_max)
+    part_param_set.create_dimension(f'Offset_X_min.{j}', 'LENGTH',Offset_X_min)
+    part_param_set.create_dimension(f'Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
+    part_param_set.create_dimension(f'Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
+    part_param_set.create_dimension(f'Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
+    part_param_set.create_dimension(f'Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
 
 
     #add relation to offset planes
@@ -539,7 +546,10 @@ if document.is_part:
 
 
     # get bounding box measure
-    part_document.update()
+    
+    # need update planes to measure
+    part_document.update_object(hybridBody_Planes)
+
     x_length = measure_between_planes(
         part_document.create_reference_from_object(Plane_Xmax),
         part_document.create_reference_from_object(Plane_Xmin),
@@ -589,10 +599,10 @@ if document.is_part:
     Line_V0 = hsf.add_new_intersection(Plane_Xmin_offset, Plane_Zmin_offset)
     Line_H1 = hsf.add_new_intersection(Plane_Ymax_offset, Plane_Zmin_offset)
     Line_H0 = hsf.add_new_intersection(Plane_Ymin_offset, Plane_Zmin_offset)
-    Line_V1.name = 'Line_V1'
-    Line_V0.name = 'Line_V0'
-    Line_H1.name = 'Line_H1'
-    Line_H0.name = 'Line_H0'
+    Line_V1.name = f'Line_V1.{j}'
+    Line_V0.name = f'Line_V0.{j}'
+    Line_H1.name = f'Line_H1.{j}'
+    Line_H0.name = f'Line_H0.{j}'
 
     # but u can use translate
     # do not intersection directly
@@ -613,10 +623,10 @@ if document.is_part:
     Point_H1V0 = hsf.add_new_intersection(Line_V0, Line_H1)
     Point_H0V0 = hsf.add_new_intersection(Line_V0, Line_H0)
 
-    Point_H1V1.name = 'Point_H1V1'
-    Point_H0V1.name = 'Point_H0V1'
-    Point_H1V0.name = 'Point_H1V0'
-    Point_H0V0.name = 'Point_H0V0'
+    Point_H1V1.name = f'Point_H1V1.{j}'
+    Point_H0V1.name = f'Point_H0V1.{j}'
+    Point_H1V0.name = f'Point_H1V0.{j}'
+    Point_H0V0.name = f'Point_H0V0.{j}'
 
     hybridBody_Points.append_hybrid_shape(Point_H1V1)
     hybridBody_Points.append_hybrid_shape(Point_H0V1)
@@ -632,10 +642,10 @@ if document.is_part:
     Point_H0V0_max = hsf.add_new_project(Point_H0V0, Plane_Zmax_offset)
     Point_H0V0_max.direction = Hybrid_Shape_D3
 
-    Point_H1V1_max.name = 'Point_H1V1_max'
-    Point_H0V1_max.name = 'Point_H0V1_max'
-    Point_H1V0_max.name = 'Point_H1V0_max'
-    Point_H0V0_max.name = 'Point_H0V0_max'
+    Point_H1V1_max.name = f'Point_H1V1_max.{j}'
+    Point_H0V1_max.name = f'Point_H0V1_max.{j}'
+    Point_H1V0_max.name = f'Point_H1V0_max.{j}'
+    Point_H0V0_max.name = f'Point_H0V0_max.{j}'
 
     # For visual properties
     Point_tuple = (Point_H1V1,
@@ -660,10 +670,10 @@ if document.is_part:
     Line_H1V1_H1V0 = hsf.add_new_line_pt_pt(Point_H1V1, Point_H1V0)
     Line_H1V0_H0V0 = hsf.add_new_line_pt_pt(Point_H1V0, Point_H0V0)
 
-    Line_H0V0_H0V1.name = 'Line_H0V0_H0V1'
-    Line_H0V1_H1V1.name = 'Line_H0V1_H1V1'
-    Line_H1V1_H1V0.name = 'Line_H1V1_H1V0'
-    Line_H1V0_H0V0.name = 'Line_H1V0_H0V0'
+    Line_H0V0_H0V1.name = f'Line_H0V0_H0V1.{j}'
+    Line_H0V1_H1V1.name = f'Line_H0V1_H1V1.{j}'
+    Line_H1V1_H1V0.name = f'Line_H1V1_H1V0.{j}'
+    Line_H1V0_H0V0.name = f'Line_H1V0_H0V0.{j}'
 
     Line_H0V0_H0V1_Zmax = hsf.add_new_line_pt_pt(
         Point_H0V0_max, Point_H0V1_max)
@@ -674,20 +684,20 @@ if document.is_part:
     Line_H1V0_H0V0_Zmax = hsf.add_new_line_pt_pt(
         Point_H1V0_max, Point_H0V0_max)
 
-    Line_H0V0_H0V1_Zmax.name = 'Line_H0V0_H0V1_Zmax'
-    Line_H0V1_H1V1_Zmax.name = 'Line_H0V1_H1V1_Zmax'
-    Line_H1V1_H1V0_Zmax.name = 'Line_H1V1_H1V0_Zmax'
-    Line_H1V0_H0V0_Zmax.name = 'Line_H1V0_H0V0_Zmax'
+    Line_H0V0_H0V1_Zmax.name = f'Line_H0V0_H0V1_Zmax.{j}'
+    Line_H0V1_H1V1_Zmax.name = f'Line_H0V1_H1V1_Zmax.{j}'
+    Line_H1V1_H1V0_Zmax.name = f'Line_H1V1_H1V0_Zmax.{j}'
+    Line_H1V0_H0V0_Zmax.name = f'Line_H1V0_H0V0_Zmax.{j}'
 
     Line_H1V1_H1V1_max = hsf.add_new_line_pt_pt(Point_H1V1, Point_H1V1_max)
     Line_H0V1_H0V1_max = hsf.add_new_line_pt_pt(Point_H0V1, Point_H0V1_max)
     Line_H1V0_H1V0_max = hsf.add_new_line_pt_pt(Point_H1V0, Point_H1V0_max)
     Line_H0V0_H0V0_max = hsf.add_new_line_pt_pt(Point_H0V0, Point_H0V0_max)
 
-    Line_H1V1_H1V1_max.name = 'Line_H1V1_H1V1_max'
-    Line_H0V1_H0V1_max.name = 'Line_H0V1_H0V1_max'
-    Line_H1V0_H1V0_max.name = 'Line_H1V0_H1V0_max'
-    Line_H0V0_H0V0_max.name = 'Line_H0V0_H0V0_max'
+    Line_H1V1_H1V1_max.name = f'Line_H1V1_H1V1_max.{j}'
+    Line_H0V1_H0V1_max.name = f'Line_H0V1_H0V1_max.{j}'
+    Line_H1V0_H1V0_max.name = f'Line_H1V0_H1V0_max.{j}'
+    Line_H0V0_H0V0_max.name = f'Line_H0V0_H0V0_max.{j}'
 
     hybridBody_Edge.append_hybrid_shape(Line_H0V0_H0V1)
     hybridBody_Edge.append_hybrid_shape(Line_H0V1_H1V1)
@@ -739,7 +749,7 @@ if document.is_part:
     Fill_Zmin.add_bound(Line_H0V1_H1V1)
     Fill_Zmin.add_bound(Line_H1V1_H1V0)
     Fill_Zmin.add_bound(Line_H1V0_H0V0)
-
+    Fill_Zmin.name=f'Fill_Zmin.{j}'
     hybridBody_Surfaces.append_hybrid_shape(Fill_Zmin)
 
     Fill_Zmax = hsf.add_new_fill()
@@ -747,8 +757,9 @@ if document.is_part:
     Fill_Zmax.add_bound(Line_H0V1_H1V1_Zmax)
     Fill_Zmax.add_bound(Line_H1V1_H1V0_Zmax)
     Fill_Zmax.add_bound(Line_H1V0_H0V0_Zmax)
+    Fill_Zmax.name=f'Fill_Zmax.{j}'
     hybridBody_Surfaces.append_hybrid_shape(Fill_Zmax)
-    part_document.update()
+
 
     # extrude dont work in 0.6.1 ver
     if version > '0.6.1':
@@ -775,7 +786,7 @@ if document.is_part:
         Wall.set_first_length_definition_type(3, wall_lim1_ref)
         Wall.set_second_length_definition_type(3, wall_lim2_ref)
 
-    Wall.name = 'Wall_e'
+    Wall.name = f'Wall_e..{j}'
     hybridBody_Surfaces.append_hybrid_shape(Wall)
 
     Surface_Bounding_box = hsf.add_new_join(Fill_Zmin, Wall)
@@ -789,27 +800,29 @@ if document.is_part:
 
     # solid
     part_document.update_object(Profile_Pad)
-    part_document.update_object(Plane_Zmax_offset)
+    #TODO
+    #part_document.update_object(Plane_Zmax_offset)
 
     sf = part_document.shape_factory
     part_document.in_work_object = body1
     ref = part_document.create_reference_from_object(Profile_Pad)
     pad = sf.add_new_pad_from_ref(ref, 50)
     pad.set_direction(ref_axis[2])
-    part_document.update()
+
     pad_1_limit_1 = pad.first_limit
     pad_1_limit_1.limit_mode = 3
     pad_1_limit_1.limiting_element = Plane_Zmax_offset
     pad_1_limit_2 = pad.second_limit
     pad_1_limit_2.limit_mode = 3
     pad_1_limit_2.limiting_element = Plane_Zmin_offset
-    part_document.update()
 
     for pt in Point_tuple:
         selection.add(pt)
     # add vis property to point
     # part must be updated
-    part_document.update()
+    part_document.update_object(body1)
+    part_document.update_object(hybridBody_main)
+
     selection.vis_properties.set_show(0)
     selection.vis_properties.set_symbol_type(12)
     selection.vis_properties.set_real_color(0, 255, 0, 0)
@@ -838,8 +851,8 @@ if document.is_part:
     selection.vis_properties.set_real_opacity(55, 0)
     selection.clear()
     body1.name=body1.name+f' [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
-
-    sys.exit(f'Bounding box [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
+    
+    sys.exit(f'Bounding box.{j} [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
              'created sucsesfull')
 else:
     print('must be a part')
