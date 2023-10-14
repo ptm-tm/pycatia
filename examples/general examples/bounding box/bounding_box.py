@@ -40,6 +40,8 @@ from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
 from pycatia.version import version
 from pycatia.knowledge_interfaces.parameter_set import Parameters
+from pycatia.knowledge_interfaces.parameter_set import ParameterSet
+from pycatia.knowledge_interfaces.parameter_set import ParameterSets
 
 
 
@@ -506,11 +508,10 @@ if document.is_part:
     hybridBody_Planes.append_hybrid_shape(Plane_Zmin_offset)
 
     #prod_params=my_product.user
-    part_param_set=Parameters(part_document.parameters.com_object)
+    part_param_set=part_document.parameters
     root_param_set=part_param_set.root_parameter_set
 
-
-    bb_param_set=part_param_set.create_set_of_parameters(part_param_set)
+    s_param=root_param_set.s
 
     #TODO add name to params
     #part_param_set.name=f'Parameters of bounding box.{j}'
