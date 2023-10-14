@@ -324,10 +324,10 @@ if document.is_part:
             caa.message_box(STATUS, 16, 'Critical error!')
             sys.exit(STATUS)
         # pylint: disable=E1101
-    except pythoncom.com_error: 
+    except pythoncom.com_error:
         #pylint error but need to detect not a plane
         pass
-    
+
     #Add dimension
     # Read number of bounding box
     try:
@@ -350,7 +350,7 @@ if document.is_part:
     #   |---|-Points.X
     #   |---|-Edge.X
     #   |---|-Surfaces.X
-    #   |-Profile_Pad.X             :output profile for solid Body
+    #   |-profile_pad.X             :output profile for solid Body
     #   |-Wireframe_Bounding_Box.X  :output edge
     #   |-Surface_Bounding_box.X    :output surfase
 
@@ -508,11 +508,11 @@ if document.is_part:
     #prod_params=my_product.user
     part_param_set=Parameters(part_document.parameters.com_object)
     root_param_set=part_param_set.root_parameter_set
-    
+
 
     bb_param_set=part_param_set.create_set_of_parameters(part_param_set)
-    
-    #TODO add nate to params
+
+    #TODO add name to params
     #part_param_set.name=f'Parameters of bounding box.{j}'
     part_param_set.create_dimension(f'Offset_X_max.{j}', 'LENGTH',Offset_X_max)
     part_param_set.create_dimension(f'Offset_X_min.{j}', 'LENGTH',Offset_X_min)
@@ -546,7 +546,7 @@ if document.is_part:
 
 
     # get bounding box measure
-    
+
     # need update planes to measure
     part_document.update_object(hybridBody_Planes)
 
@@ -715,13 +715,13 @@ if document.is_part:
     hybridBody_Edge.append_hybrid_shape(Line_H0V0_H0V0_max)
 
     # Profile for pad
-    Profile_Pad = hsf.add_new_join(Line_H0V0_H0V1, Line_H0V1_H1V1)
-    Profile_Pad.add_element(Line_H1V1_H1V0)
-    Profile_Pad.add_element(Line_H1V0_H0V0)
-    Profile_Pad.set_manifold(True)
-    Profile_Pad.set_connex(True)
-    Profile_Pad.name = f'Profile_Pad.{j}'
-    hybridBody_main.append_hybrid_shape(Profile_Pad)
+    profile_pad = hsf.add_new_join(Line_H0V0_H0V1, Line_H0V1_H1V1)
+    profile_pad.add_element(Line_H1V1_H1V0)
+    profile_pad.add_element(Line_H1V0_H0V0)
+    profile_pad.set_manifold(True)
+    profile_pad.set_connex(True)
+    profile_pad.name = f'profile_pad.{j}'
+    hybridBody_main.append_hybrid_shape(profile_pad)
 
     Wireframe_Bounding_Box = hsf.add_new_join(Line_H0V0_H0V1, Line_H0V1_H1V1)
     Wireframe_Bounding_Box.add_element(Line_H1V1_H1V0)
@@ -763,33 +763,33 @@ if document.is_part:
 
     # extrude dont work in 0.6.1 ver
     if version > '0.6.1':
-        Wall = hsf.add_new_extrude(Profile_Pad, 20, 0, Hybrid_Shape_D3)
-        Wall.first_limit_type = 2
-        Wall.second_limit_type = 2
-        Wall.compute()
-        Wall.first_upto_element = part_document.create_reference_from_object(
+        wall = hsf.add_new_extrude(profile_pad, 20, 0, Hybrid_Shape_D3)
+        wall.first_limit_type = 2
+        wall.second_limit_type = 2
+        wall.compute()
+        wall.first_upto_element = part_document.create_reference_from_object(
             Plane_Zmin_offset)
-        Wall.second_upto_element = part_document.create_reference_from_object(
+        wall.second_upto_element = part_document.create_reference_from_object(
             Plane_Zmax_offset)
     else:
-        Wall = hsf.add_new_sweep_line(Profile_Pad)
-        Wall.mode = 6
-        Wall.solution_no = 0
-        Wall.smooth_activity = False
-        Wall.guide_deviation_activity = False
-        Wall.draft_computation_mode = 0
-        Wall.draft_direction = Hybrid_Shape_D3
+        wall = hsf.add_new_sweep_line(profile_pad)
+        wall.mode = 6
+        wall.solution_no = 0
+        wall.smooth_activity = False
+        wall.guide_deviation_activity = False
+        wall.draft_computation_mode = 0
+        wall.draft_direction = Hybrid_Shape_D3
         wall_lim1_ref = part_document.create_reference_from_object(
             Plane_Zmax_offset)
         wall_lim2_ref = part_document.create_reference_from_object(
             Plane_Zmin_offset)
-        Wall.set_first_length_definition_type(3, wall_lim1_ref)
-        Wall.set_second_length_definition_type(3, wall_lim2_ref)
+        wall.set_first_length_definition_type(3, wall_lim1_ref)
+        wall.set_second_length_definition_type(3, wall_lim2_ref)
 
-    Wall.name = f'Wall_e..{j}'
-    hybridBody_Surfaces.append_hybrid_shape(Wall)
+    wall.name = f'Wall_e..{j}'
+    hybridBody_Surfaces.append_hybrid_shape(wall)
 
-    Surface_Bounding_box = hsf.add_new_join(Fill_Zmin, Wall)
+    Surface_Bounding_box = hsf.add_new_join(Fill_Zmin, wall)
     Surface_Bounding_box.add_element(Fill_Zmax)
     Surface_Bounding_box.set_manifold(True)
     Surface_Bounding_box.set_connex(True)
@@ -799,13 +799,12 @@ if document.is_part:
     hybridBody_main.append_hybrid_shape(Surface_Bounding_box)
 
     # solid
-    part_document.update_object(Profile_Pad)
-    #TODO
-    #part_document.update_object(Plane_Zmax_offset)
+    # update profile to selection
+    part_document.update_object(profile_pad)
 
     sf = part_document.shape_factory
     part_document.in_work_object = body1
-    ref = part_document.create_reference_from_object(Profile_Pad)
+    ref = part_document.create_reference_from_object(profile_pad)
     pad = sf.add_new_pad_from_ref(ref, 50)
     pad.set_direction(ref_axis[2])
 
@@ -851,7 +850,7 @@ if document.is_part:
     selection.vis_properties.set_real_opacity(55, 0)
     selection.clear()
     body1.name=body1.name+f' [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
-    
+
     sys.exit(f'Bounding box.{j} [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
              'created sucsesfull')
 else:
