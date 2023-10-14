@@ -14,6 +14,7 @@
     .. warning:
         Catia must be run and document open and active.
         Part document must content any geometry and one axis system
+        Some critical errors send message to console
     .. note:
         Need add cylindrical bounding box
 """
@@ -26,20 +27,20 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..\\pycatia'))
 ##########################################################
-
-from msvcrt import getch
+# pylint: disable=C0413
+# pylint error wrong import position
+import pythoncom
 from pycatia.mec_mod_interfaces.axis_system import AxisSystem
 from pycatia.mec_mod_interfaces.body import Body
 from pycatia.mec_mod_interfaces.part import Part
 from pycatia.mec_mod_interfaces.part_document import PartDocument
-
 from pycatia.in_interfaces.reference import Reference
 from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
 from pycatia.version import version
 
-import pythoncom
+
 """
 if version <='0.6.1':
     sys.exit('version pycatia must be > 0.6.1. Current version is='+version)
@@ -211,8 +212,6 @@ except CATIAApplicationException as e:
     print(e.message)
     print('CATIA not started or document not ' +
           'opened or started several CATIA sessions')
-    print('Press any key to exit...')
-    getch()
     sys.exit(e.message)
 
 
@@ -244,14 +243,11 @@ if document.is_part:
     part_document = Part(document.part.com_object)
     selection = document.selection
 
-    
     try:
         part_document.update()
     except CATIAApplicationException as e:
         print(e.message)
         print('Part document must be without errors!')
-        print('Press any key to exit...')
-        getch()
         sys.exit('Part document must be without errors!')
 
     hsf = part_document.hybrid_shape_factory
@@ -323,7 +319,8 @@ if document.is_part:
                 'Apps will close!'
             caa.message_box(STATUS, 16, 'Critical error!')
             sys.exit(STATUS)
-    except pythoncom.com_error: # pylint: disable=E1101
+        # pylint: disable=E1101
+    except pythoncom.com_error: 
         #pylint error but need to detect not a plane
         pass
 
@@ -496,50 +493,49 @@ if document.is_part:
     hybridBody_Planes.append_hybrid_shape(Plane_Zmin_offset)
 
     #Add dimension
-    #TODO add read and write j
-    j=0
-    product=document.product
-    user_prop=product.user_ref_properties
-    user_prop.create_integer('j', j)
-    user_prop.
-    
-    
-    print()
-    
+    # Read number of bounding box
+    try:
+        product=document.product
+        user_prop=product.user_ref_properties
+        j=int(user_prop.item('j').value)+1
+        user_prop.item('j').value=j
+    except CATIAApplicationException as e:
+        print(e.message)
+        print('will use j=0')
+        j=0
+        user_prop.create_integer('j', 0)
 
     #prod_params=my_product.user
-    
-    
     part_param=part_document.parameters
-    part_param.create_dimension('Offset_X_max.{j}', 'LENGTH',Offset_X_max)
-    part_param.create_dimension('Offset_X_min.{j}', 'LENGTH',Offset_X_min)
-    part_param.create_dimension('Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
-    part_param.create_dimension('Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
-    part_param.create_dimension('Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
-    part_param.create_dimension('Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
+    part_param.create_dimension(f'Offset_X_max.{j}', 'LENGTH',Offset_X_max)
+    part_param.create_dimension(f'Offset_X_min.{j}', 'LENGTH',Offset_X_min)
+    part_param.create_dimension(f'Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
+    part_param.create_dimension(f'Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
+    part_param.create_dimension(f'Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
+    part_param.create_dimension(f'Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
+
 
     #add relation to offset planes
-    #TODO not work if run 2 times
-    #print(Offset_X_max.)
+
     part_relation = part_document.relations
     part_relation.create_formula(
-        'Offset_X_max.{j}', 'Offset to X_max direction',
-        Plane_Xmax_offset.offset, 'Offset_X_max')
+        f'Offset_X_max.{j}', 'Offset to X_max direction',
+        Plane_Xmax_offset.offset, f'Offset_X_max.{j}')
     part_relation.create_formula(
-        'Offset_X_min.{j}', 'Offset to X_min direction',
-        Plane_Xmin_offset.offset, 'Offset_X_min')
+        f'Offset_X_min.{j}', 'Offset to X_min direction',
+        Plane_Xmin_offset.offset, f'Offset_X_min.{j}')
     part_relation.create_formula(
-        'Offset_Y_max.{j}', 'Offset to Y_max direction',
-        Plane_Ymax_offset.offset, 'Offset_Y_max')
+        f'Offset_Y_max.{j}', 'Offset to Y_max direction',
+        Plane_Ymax_offset.offset, f'Offset_Y_max.{j}')
     part_relation.create_formula(
-        'Offset_Y_min.{j}', 'Offset to Y_min direction',
-        Plane_Ymin_offset.offset, 'Offset_Y_min')
+        f'Offset_Y_min.{j}', 'Offset to Y_min direction',
+        Plane_Ymin_offset.offset, f'Offset_Y_min.{j}')
     part_relation.create_formula(
-        'Offset_Z_max.{j}', 'Offset to Z_max direction',
-        Plane_Zmax_offset.offset, 'Offset_Z_max')
+        f'Offset_Z_max.{j}', 'Offset to Z_max direction',
+        Plane_Zmax_offset.offset, f'Offset_Z_max.{j}')
     part_relation.create_formula(
-        'Offset_Z_min.{j}', 'Offset to Z_min direction',
-        Plane_Zmin_offset.offset, 'Offset_Z_min')
+        f'Offset_Z_min.{j}', 'Offset to Z_min direction',
+        Plane_Zmin_offset.offset, f'Offset_Z_min.{j}')
 
 
     # get bounding box measure
@@ -842,10 +838,9 @@ if document.is_part:
     selection.vis_properties.set_real_opacity(55, 0)
     selection.clear()
     body1.name=body1.name+f' [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
-    
-    sys.exit(f'Bounding box [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
-             'created sucsesfull ')
 
+    sys.exit(f'Bounding box [{x_length:.2f}x{y_length:.2f}х{z_length:.2f}]'
+             'created sucsesfull')
 else:
     print('must be a part')
     caa.message_box('Wrong selection! Application will closed!',
