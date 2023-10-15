@@ -39,9 +39,7 @@ from pycatia.space_analyses_interfaces.spa_workbench import SPAWorkbench
 from pycatia import catia
 from pycatia.exception_handling.exceptions import CATIAApplicationException
 from pycatia.version import version
-from pycatia.knowledge_interfaces.parameter_set import Parameters
-from pycatia.knowledge_interfaces.parameter_set import ParameterSet
-from pycatia.knowledge_interfaces.parameter_set import ParameterSets
+
 
 
 
@@ -218,6 +216,7 @@ except CATIAApplicationException as e:
     print(e.message)
     print('CATIA not started or document not ' +
           'opened or started several CATIA sessions')
+    caa.application.visible=True
     sys.exit(e.message)
 
 
@@ -510,19 +509,40 @@ if document.is_part:
     #prod_params=my_product.user
     part_param_set=part_document.parameters
     root_param_set=part_param_set.root_parameter_set
-
-    s_param=root_param_set.s
+    """
+    Dim parameters1 As Parameters
+    Set parameters1 = part1.Part.Parameters
+    Dim ParameterSet1 As ParameterSet
+    Set ParameterSet1 = parameters1.RootParameterSet
+    Dim parameterSets1 As ParameterSets
+    Set parameterSets1 = parameterSet1.ParameterSets
+    """
+    #part_param_set.create_set_of_parameters(part_param_set.root_parameter_set)
+    
+    param_set=part_param_set.root_parameter_set
+        
+    param_sets=param_set.parameter_sets
+    new_set=param_sets.create_set(f'Bounding_box.{j}')
+    st=new_set.direct_parameters
+    
 
     #TODO add name to params
     #part_param_set.name=f'Parameters of bounding box.{j}'
+    """
     part_param_set.create_dimension(f'Offset_X_max.{j}', 'LENGTH',Offset_X_max)
     part_param_set.create_dimension(f'Offset_X_min.{j}', 'LENGTH',Offset_X_min)
     part_param_set.create_dimension(f'Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
     part_param_set.create_dimension(f'Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
     part_param_set.create_dimension(f'Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
     part_param_set.create_dimension(f'Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
-
-
+    """    
+    st.create_dimension(f'Offset_X_max.{j}', 'LENGTH',Offset_X_max)
+    st.create_dimension(f'Offset_X_min.{j}', 'LENGTH',Offset_X_min)
+    st.create_dimension(f'Offset_Y_max.{j}', 'LENGTH',Offset_Y_max)
+    st.create_dimension(f'Offset_Y_min.{j}', 'LENGTH',Offset_Y_min)
+    st.create_dimension(f'Offset_Z_max.{j}', 'LENGTH',Offset_Z_max)
+    st.create_dimension(f'Offset_Z_min.{j}', 'LENGTH',Offset_Z_min)
+    print(st.name)
     #add relation to offset planes
 
     part_relation = part_document.relations
