@@ -32,7 +32,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # -- Project information -----------------------------------------------------
 
 project = 'pycatia'
-copyright = '2022, Paul Bourne'
+copyright = '2023, Paul Bourne'
 author = 'Paul Bourne'
 
 # The short X.Y version
@@ -97,8 +97,11 @@ html_theme = 'alabaster'
 # documentation.
 
 html_theme_options = {
+    'logo': 'pycatia-logo.png',
     'github_user': 'evereux',
     'github_repo': 'pycatia',
+    'github_button': True,
+    'analytics_id': 'G-HZ9RD8KHJK'
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
