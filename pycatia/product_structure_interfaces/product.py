@@ -25,6 +25,7 @@ from pycatia.mec_mod_interfaces.constraints import Constraints
 from pycatia.product_structure_interfaces.analyze import Analyze
 from pycatia.product_structure_interfaces.publications import Publications
 from pycatia.system_interfaces.any_object import AnyObject
+from pycatia.enumeration.CatWorkModeType import *
 
 if TYPE_CHECKING:
     from pycatia.product_structure_interfaces.products import Products
@@ -626,7 +627,8 @@ class Product(AnyObject):
                 try:
                     current_product.activate_default_shape()
                 except CATIAApplicationException:
-                    current_product.logger.info(f'Could not activate default shape for {current_product.name}.')
+                    current_product.logger.info(f'Could not activate default shape for {
+                                                current_product.name}.')
 
                 product_looper(current_product.products)
 
@@ -751,7 +753,7 @@ class Product(AnyObject):
         # # system_service = self.application.system_service
         # # return system_service.evaluate(vba_code, 0, vba_function_name, [self.com_object])
 
-    def apply_work_mode(self, new_mode: int) -> None:
+    def apply_work_mode(self, mode: Cat) -> None:
         """
         .. note::
             :class: toggle
@@ -769,7 +771,7 @@ class Product(AnyObject):
         :param int new_mode: enum cat_work_mode_type
         :rtype: None
         """
-        return self.product.ApplyWorkMode(new_mode)
+        return self.product.ApplyWorkMode(Mode)
 
     def attributes(self) -> str:
         """
@@ -948,7 +950,8 @@ class Product(AnyObject):
        :return: int()
        """
 
-        self.logger.warning('This feature will be removed in a future release.')
+        self.logger.warning(
+            'This feature will be removed in a future release.')
 
         return self.product.Products.Count
 
